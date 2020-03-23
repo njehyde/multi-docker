@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t njehyde/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run njehyde/react-rest npm test -- --coverage
+
+after_success:
+  - docker build -t njehyde/multi-client ./client
+  - docker build -t njehyde/multi-nginx ./nginx
+  - docker build -t njehyde/multi-server ./server
+  - docker build -t njehyde/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push njehyde/multi-client
+  - docker push njehyde/multi-nginx
+  - docker push njehyde/multi-server
+  - docker push njehyde/multi-worker
